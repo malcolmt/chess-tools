@@ -6,10 +6,6 @@
    modules such as 'ChessTools.Board.Western' (for western chess, for example).
  -}
 
--- XXX: Document that there are two kinds of arrays in play here: the board
--- array, representing a position, and the lookup tables. They are of different
--- sizes. Make sure they are different types as well.
-
 module ChessTools.Board (
     -- * Board representations
     -- $board_arrays
