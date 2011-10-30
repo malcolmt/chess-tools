@@ -27,17 +27,17 @@ Stability:           experimental
 Category:            Game
 Build-type:          Simple
 
--- Homepage:
--- Bug-reports:
+Homepage:            https://github.com/malcolmt/chess-tools/
+Bug-reports:         https://github.com/malcolmt/chess-tools/issues
 
 Extra-source-files:  README.markdown
                      TODO.otl
 
 Cabal-version:       >= 1.10
 
--- Source-repository head
---   Type: git
---   Location:
+Source-repository head
+  Type:              git
+  Location:          git://github.com/malcolmt/chess-tools.git
 
 
 Library
