@@ -1,0 +1,61 @@
+Name:                chess-tools
+Version:             0.1.0
+Synopsis:            Library for working with chess (and variants) game data.
+
+Description:
+    This library provides some useful data structures for working with chess
+    games. It provides the framework onto which can be added a storage or
+    analysis system, or a chess playing engine.
+
+    Contained in here are routines for setting up a position and rapidly
+    generating all legal moves in that position. This list can be used by other
+    code to provide choices to a user, or in some kind of search for the best
+    move to play.
+
+    The core code is deliberately generic in order to make it applicable to
+    more than just western-style chess. The same data structures should be
+    useful for Shogi (Japanese chess) and Xianqi (Chinese chess), as well as
+    other variants.
+
+Author:              Malcolm Tredinnick
+Maintainer:          Malcolm Tredinnick <malcolm.tredinnick@gmail.com>
+Copyright:           Copyright (c) 2011, Malcolm Tredinnick
+License:             BSD3
+License-file:        LICENSE
+
+Stability:           experimental
+Category:            Game
+Build-type:          Simple
+
+-- Homepage:
+-- Bug-reports:
+
+Extra-source-files:  README.markdown
+                     TODO.otl
+
+Cabal-version:       >= 1.10
+
+-- Source-repository head
+--   Type: git
+--   Location:
+
+
+Library
+  Exposed-modules:   ChessTools.Board
+                     ChessTools.Board.Internal
+
+  Default-language:  Haskell2010
+  Hs-Source-Dirs:    src
+  GHC-Options:       -Wall -Werror -O
+  Build-depends:     haskell2010
+
+
+-- TODO: Wrestle this to the ground. Still a little problematic.
+
+-- Test-Suite test-chess-tools
+--   Type:                detailed-1.0
+--   Test-module:         Tests
+--   Hs-source-dirs:      test
+--   Build-depends:       haskell2010
+--                        Cabal >= 1.10
+
