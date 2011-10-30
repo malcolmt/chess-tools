@@ -24,6 +24,7 @@ data BoardSize = BoardSize {
                     boardVertBuffer :: Int   -- ^ Vertical buffer size for
                                              --   jumping pieces.
                     }
+                    deriving (Show, Eq)
 
 -- | The coordinates of a cell on the board.
 --
@@ -35,7 +36,18 @@ data BoardSize = BoardSize {
 -- traditional external representation of a game's cells. Thus, whilst Shogi
 -- games are recorded with the rank before the column (for example, \"/7f/\"),
 -- this module and its callers still use column-first ordering.
-newtype Square = Square (Int, Int) deriving (Show, Eq, Ord)
+newtype Square = Square (Int, Int) deriving (Show, Eq)
+
+-- There are times when it is convenient to be able to sort a list of squares,
+-- so we impose a somewhat arbitrary ordering on them. This is not the
+-- automatically derived version, because we want to sort by ranks ahead of
+-- files.
+instance Ord Square where
+    compare (Square (x1, y1)) (Square (x2, y2)) =
+        case y1 `compare` y2 of
+            LT -> LT
+            GT -> GT
+            EQ -> x1 `compare` x2
 
 -- | A rapid lookup (/O(1)/) data structure for computing various values based
 -- on two squares on the board. These could be distances between the squares in

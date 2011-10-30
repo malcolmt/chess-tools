@@ -9,10 +9,6 @@ import ChessTools.Board
 import ChessTools.Board.Internal
 
 
-instance Show BoardSize where
-    show (BoardSize h v vbuf) =
-            "BoardSize " ++ unwords (map show [h, v, vbuf])
-
 instance Arbitrary BoardSize where
     arbitrary = sized $ \n -> do
         let n' = n + 2
@@ -79,17 +75,9 @@ prop_square_to_index_inverse = forAll boardAndSquareGen $ \(b, sq) ->
 -- As squares move from lower left ("a1" in western chess) to upper right (h8),
 -- the index into the lookup table should increase.
 prop_index_increases_with_square = forAll boardAndTwoSquareGen $ \(b, s1, s2) ->
-    let Square (c1, r1) = s1
-        Square (c2, r2) = s2
-        idx1 = squareToIndex b s1
+    let idx1 = squareToIndex b s1
         idx2 = squareToIndex b s2
-    in case r1 `compare` r2 of
-        GT -> idx1 > idx2
-        LT -> idx1 < idx2
-        EQ -> case c1 `compare` c2 of
-                GT -> idx1 > idx2
-                LT -> idx1 < idx2
-                EQ -> True
+    in s1 `compare` s2 == idx1 `compare` idx2
 
 -- The board array size should be computed correctly (this is the
 -- representation of the board of pieces, not a lookup array, which is smaller).
