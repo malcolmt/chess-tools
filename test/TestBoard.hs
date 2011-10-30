@@ -28,8 +28,8 @@ instance Arbitrary BoardSize where
 smallBoardGen :: Gen BoardSize
 smallBoardGen = sized $ \n ->
     resize (min n 11) arbitrary
-    
-    
+
+
 -- | Square coordinates depend upon the dimensions of the board that contains
 -- them. Hence, this generator requires a seeding parameter: the board size.
 genSquare :: BoardSize -> Gen Square

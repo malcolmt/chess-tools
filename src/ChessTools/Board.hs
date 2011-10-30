@@ -1,6 +1,6 @@
 {- | General routines and data structures to support generating moves in a
    chess-like game.
-  
+
    Unless you are implementing support for a new style of game, you probably
    won't use this module directly. More specific and useful functions are in
    modules such as 'ChessTools.Board.Western' (for western chess, for example).
