@@ -1,0 +1,36 @@
+[_] Boards
+	[_] piece lookup tables
+		[_] generic
+		[_] regular chess
+			[_] king
+			[_] queen
+			[_] rook
+			[_] bishop
+			[_] knight
+			[_] pawn
+		[_] Shogi
+		[_] Xiangqi
+			: May be tricky because of the "knight" move and blocking.
+	[X] tests
+[_] Games
+	[_] data structure for holding games and nested comments
+	[_] move legality checking
+	[_] move iterator
+	[_] showing a board position
+	[_] getting options from a particular position (variation choices)
+[_] PGN
+	[_] read string & convert to game
+	[_] take game object and convert to PGN
+	[_] arbitrary starting position (FEN parsing)
+	[_] Chess 960 games
+[_] Packaging
+	[_] Setup,hs
+	[_] chess-tools.cabal
+[_] Maybe one day...
+	[_] UCI interface for western chess
+	[_] USI interface for shogi
+	[_] Graphical board display
+		[_] Western
+		[_] Shogi
+		[_] Xiangqi
+
