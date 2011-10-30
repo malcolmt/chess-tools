@@ -30,7 +30,7 @@ Build-type:          Simple
 Homepage:            https://github.com/malcolmt/chess-tools/
 Bug-reports:         https://github.com/malcolmt/chess-tools/issues
 
-Extra-source-files:  README.markdown
+Extra-source-files:  README.md
                      TODO.otl
 
 Cabal-version:       >= 1.10
