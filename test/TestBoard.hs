@@ -85,21 +85,14 @@ prop_board_array_size bs = boardArraySize bs == expected
     where BoardSize h v vbuf = bs
           expected = h * v + v * (h - 1) + 2 * vbuf * (2 * h - 1)
 
--- For any two squares s1 and s2, the value of constOffset + s1 - s2 should be
--- between 0 and the lookup array maximum size.
-prop_lookup_index_is_positive = forAll boardAndTwoSquareGen $ \(b, s1, s2) ->
-    let idx1 = squareToIndex b s1
-        idx2 = squareToIndex b s2
-        offset = constOffset b + idx1 - idx2
-    in offset >= 0 && offset < 2 * offset + 1
-
 
 -- The list returned from repIndexList should actually be representative. That
 -- is, it should contain as many values as the size of the lookup array and all
 -- of the distance values in it should be unique.
 prop_repIndexList_is_representative = forAll smallBoardGen $ \bs ->
-    let CL xs = repIndexList bs
-    in length xs == 2 * constOffset bs + 1 &&
+    let cl@(CL xs) = repIndexList bs
+        (l, u) = lookupBounds cl
+    in length xs == u - l + 1 &&
        (length . group . sort $ map fst xs) == length xs
 
 
@@ -112,12 +105,12 @@ board1 = BoardSize 8 8 2
 board2 = BoardSize 8 9 2
 repList1 = repIndexList board1
 repList2 = repIndexList board2
-fTable1 = fileTable board1 repList1
-fTable2 = fileTable board2 repList2
-rTable1 = rankTable board1 repList1
-rTable2 = rankTable board2 repList2
-sTable1 = squareTable board1 repList1
-sTable2 = squareTable board2 repList2
+fTable1 = fileTable repList1
+fTable2 = fileTable repList2
+rTable1 = rankTable repList1
+rTable2 = rankTable repList2
+sTable1 = squareTable repList1
+sTable2 = squareTable repList2
 
 fileCheckFunc (Square s1) (Square s2) = abs $ fst s1 - fst s2
 rankCheckFunc (Square s1) (Square s2) = abs $ snd s1 - snd s2

@@ -80,7 +80,7 @@ boardArraySize s@(BoardSize _ v vBuf) =  rowLength s * (v + 2 * vBuf)
 -- | Return the 'LookupTable' value for a pair of indexes. The first index is
 -- the \"/from/\" location, the second is the \"/to/\" location.
 fetch :: LookupTable -> Int -> Int -> Int
-fetch (LookupTable off arr) s1 s2 = arr ! (off + s1 - s2)
+fetch (LookupTable arr) s1 s2 = arr ! (s1 - s2)
 
 -- | Returns a list of representative 'Square' pairs that cover all the lookup
 -- table index values. On a square board, there are @(2x-1)^2@ possible index
@@ -108,19 +108,19 @@ repIndexList s@(BoardSize h v _) = CL $ map head $ groupBy compFirst $ sort l
 -- algorithmic complexity description).
 
 -- | File separation between two squares.
-fileTable :: BoardSize -> CoveringIndexList -> LookupTable
-fileTable b cl = distanceTableWith f b cl
+fileTable :: CoveringIndexList -> LookupTable
+fileTable cl = distanceTableWith f cl
     where f (Square s1) (Square s2) = abs (fst s1 - fst s2)
 
 -- | Rank separation between two squares.
-rankTable :: BoardSize -> CoveringIndexList -> LookupTable
-rankTable b cl = distanceTableWith f b cl
+rankTable :: CoveringIndexList -> LookupTable
+rankTable cl = distanceTableWith f cl
     where f (Square s1) (Square s2) = abs (snd s1 - snd s2)
 
 -- | Square diagonal distance between two squares (this is using the chessboard
 -- metric, not the Euclidean one).
-squareTable :: BoardSize -> CoveringIndexList -> LookupTable
-squareTable b cl = distanceTableWith f b cl
+squareTable :: CoveringIndexList -> LookupTable
+squareTable cl = distanceTableWith f cl
     where f (Square s1) (Square s2) =
             max (abs (fst s1 - fst s2)) (abs (snd s1 - snd s2))
 

@@ -22,7 +22,6 @@ tests = [
             testProperty "array size" prop_board_array_size
             ],
         testGroup "Lookup arrays" [
-            testProperty "valid lookup indices" prop_lookup_index_is_positive,
             testProperty "repIndexList represents"
                     prop_repIndexList_is_representative,
             testProperty "file lookup 1" prop_check_file_distance_1,

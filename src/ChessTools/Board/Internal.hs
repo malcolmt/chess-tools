@@ -53,11 +53,15 @@ instance Ord Square where
 -- on two squares on the board. These could be distances between the squares in
 -- some form (file or rank separation) or whether some kind of piece can move
 -- between those two squares (using 0 values for invalid moves).
-data LookupTable = LookupTable Int (Array Int Int)
+data LookupTable = LookupTable (Array Int Int)
 
 -- | Used to hold a representative set of squares when computing 'LookupTable'
 -- results. Create one with 'repIndexList' and use it in all lookup table
 -- creation functions.
+--
+-- For internal code using this, the main invariant to note is that the offset
+-- component (the first 'Int') is in sorted order. This is used by, for
+-- example, the 'lookupBounds' function.
 newtype CoveringIndexList = CL [(Int, (Square, Square))]
 
 -- | Convert a 'Square' to an index into a board array. The index is the same
@@ -87,23 +91,18 @@ rowLength s = 2 * boardHorizSize s - 1
 leftBuf :: BoardSize -> Int
 leftBuf s = boardHorizSize s `div` 2
 
--- | Given two square indices, @sq1@ and @sq2@, the value
--- @(constOffset + sq1 - sq2)@ is always inside a lookup table's bounds.
-constOffset :: BoardSize -> Int
-constOffset s = ur - ll
-    where BoardSize h v _ = s
-          ur = squareToIndex s $ Square (h - 1, v - 1)
-          ll = squareToIndex s $ Square (0, 0)
-
+-- | Returns a pair that can be used to specify the bounds for a
+-- 'Data.Array.Array'.
+lookupBounds :: CoveringIndexList -> (Int, Int)
+lookupBounds (CL cs) = (fst $ head cs, fst $ last cs)
 
 -- | Utility function for computing the file, rank and square distance tables.
 -- In each case, the computations are almost identical, differing only by the
 -- type of calculation performed on the two squares. That calculation function
 -- is passed in as the first argument to 'distanceTableWith'.
-distanceTableWith :: (Square -> Square -> Int) -> BoardSize ->
-                      CoveringIndexList -> LookupTable
-distanceTableWith cmp b (CL cs) =
-    LookupTable offset (array (0, 2 * offset) $ map f cs)
-    where offset = constOffset b
-          f (d, (sq1, sq2)) = (offset + d, cmp sq1 sq2)
+distanceTableWith :: (Square -> Square -> Int) -> CoveringIndexList ->
+                      LookupTable
+distanceTableWith cmp cl@(CL cs) =
+    LookupTable (array (lookupBounds cl) $ map f cs)
+    where f (d, (sq1, sq2)) = (d, cmp sq1 sq2)
 
