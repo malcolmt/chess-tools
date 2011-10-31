@@ -73,9 +73,9 @@ data LookupTable = LookupTable (Array LIndex Int)
 -- results. Create one with 'repIndexList' and use it in all lookup table
 -- creation functions.
 --
--- For internal code using this, the main invariant to note is that the offset
--- component (the first 'Int') is in sorted order. This is used by, for
--- example, the 'lookupBounds' function.
+-- For internal code using this, the main invariant to note is that the
+-- 'LIndex' component is in sorted order. This is used by, for example, the
+-- 'lookupBounds' function.
 newtype CoveringIndexList = CL [(LIndex, (Square, Square))]
 
 -- | Convert a 'Square' to an index into a board array. The index is the same
