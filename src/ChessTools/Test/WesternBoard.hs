@@ -34,11 +34,13 @@ invalidAlgebraicSquaresGen =
             return $ c ++ [x]
 
 
+prop_goodAlgebraicSquares :: Property
 prop_goodAlgebraicSquares = forAll validAlgebraicSquaresGen $ \s ->
     case algebraicToIndex s of
         Nothing -> False
         _       -> True
 
+prop_badAlgebraicSquares :: Property
 prop_badAlgebraicSquares = forAll invalidAlgebraicSquaresGen $ \s ->
     case algebraicToIndex s of
         Nothing -> True

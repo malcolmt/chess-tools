@@ -9,22 +9,23 @@ import ChessTools.Board
 import ChessTools.Board.Internal
 
 
-instance Arbitrary BoardSize where
-    arbitrary = sized $ \n -> do
-        let n' = n + 2
-        dx <- choose (2, n')
-        dy <- choose (2, n')
-        vbuf <- choose (0, 4)
-        return $ BoardSize dx dy vbuf
-
+-- This could be an Arbitrary instance, but it would be an orphan. We don't
+-- want to put the instance in ChessTools.Board.Internal to avoid unnecessary
+-- QuickCheck dependencies, so prefer to use a direct Gen function here.
+boardSizeGen :: Gen BoardSize
+boardSizeGen = sized $ \n -> do
+    let n' = n + 2
+    dx <- choose (2, n')
+    dy <- choose (2, n')
+    vbuf <- choose (0, 4)
+    return $ BoardSize dx dy vbuf
 
 -- | For some of the more complex tests (there's at least one function that is
 -- O(n^4), for example), it's more feasible to only generate small realistic
 -- board sizes. An upper bound of 11 by 11 is arbitrarily used here.
 smallBoardGen :: Gen BoardSize
 smallBoardGen = sized $ \n ->
-    resize (min n 11) arbitrary
-
+    resize (min n 11) boardSizeGen
 
 -- | Square coordinates depend upon the dimensions of the board that contains
 -- them. Hence, this generator requires a seeding parameter: the board size.
@@ -39,13 +40,13 @@ genTwoSquares bs = (,) <$> genSquare bs <*> genSquare bs
 
 boardAndSquareGen :: Gen (BoardSize, Square)
 boardAndSquareGen = do
-    bs <- arbitrary :: Gen BoardSize
+    bs <- boardSizeGen
     sq <- genSquare bs
     return (bs, sq)
 
 boardAndTwoSquareGen :: Gen (BoardSize, Square, Square)
 boardAndTwoSquareGen = do
-    bs <- arbitrary :: Gen BoardSize
+    bs <- boardSizeGen
     s1 <- genSquare bs
     s2 <- genSquare bs
     return (bs, s1, s2)
@@ -57,7 +58,7 @@ boardAndTwoSquareGen = do
 
 boardAndIndexGen :: Gen (BoardSize, BIndex)
 boardAndIndexGen = do
-    bs <- arbitrary :: Gen BoardSize
+    bs <- boardSizeGen
     Square (dx, dy) <- genSquare bs
     return (bs, BI ((dy + boardVertBuffer bs) * rowLength bs + dx + leftBuf bs))
 
@@ -66,14 +67,17 @@ boardAndIndexGen = do
 -- other. That is:
 --      index -> square -> index should be the identity
 --      square -> index -> square should be the identity
+prop_indexToSquareInverse :: Property
 prop_indexToSquareInverse = forAll boardAndIndexGen $ \(b, idx) ->
     squareToIndex b (indexToSquare b idx) == idx
 
+prop_squareToIndexInverse :: Property
 prop_squareToIndexInverse = forAll boardAndSquareGen $ \(b, sq) ->
     indexToSquare b (squareToIndex b sq) == sq
 
 -- As squares move from lower left ("a1" in western chess) to upper right (h8),
 -- the index into the lookup table should increase.
+prop_indexIncreasesWithSquare :: Property
 prop_indexIncreasesWithSquare = forAll boardAndTwoSquareGen $ \(b, s1, s2) ->
     let idx1 = squareToIndex b s1
         idx2 = squareToIndex b s2
@@ -81,14 +85,16 @@ prop_indexIncreasesWithSquare = forAll boardAndTwoSquareGen $ \(b, s1, s2) ->
 
 -- The board array size should be computed correctly (this is the
 -- representation of the board of pieces, not a lookup array, which is smaller).
-prop_boardArraySize bs = boardArraySize bs == expected
-    where BoardSize h v vbuf = bs
-          expected = h * v + v * (h - 1) + 2 * vbuf * (2 * h - 1)
-
+prop_boardArraySize :: Property
+prop_boardArraySize = forAll boardSizeGen $ \b ->
+    let BoardSize h v vbuf = b
+        expected = h * v + v * (h - 1) + 2 * vbuf * (2 * h - 1)
+    in boardArraySize b == expected
 
 -- The list returned from repIndexList should actually be representative. That
 -- is, it should contain as many values as the size of the lookup array and all
 -- of the distance values in it should be unique.
+prop_repIndexListRepresents :: Property
 prop_repIndexListRepresents = forAll smallBoardGen $ \bs ->
     let cl@(CL xs) = repIndexList bs
         (l, u) = lookupBounds cl
@@ -101,10 +107,15 @@ prop_repIndexListRepresents = forAll smallBoardGen $ \bs ->
 -- (one square and one not). This avoids having to continually regenerate the
 -- representative index list.
 
+board1, board2 :: BoardSize
 board1 = BoardSize 8 8 2
 board2 = BoardSize 8 9 2
+
+repList1, repList2 :: CoveringIndexList
 repList1 = repIndexList board1
 repList2 = repIndexList board2
+
+fTable1, fTable2, rTable1, rTable2, sTable1, sTable2 :: LookupTable
 fTable1 = fileTable repList1
 fTable2 = fileTable repList2
 rTable1 = rankTable repList1
@@ -112,19 +123,32 @@ rTable2 = rankTable repList2
 sTable1 = squareTable repList1
 sTable2 = squareTable repList2
 
+fileCheckFunc, rankCheckFunc, squareCheckFunc :: Square -> Square -> Int
 fileCheckFunc (Square s1) (Square s2) = abs $ fst s1 - fst s2
 rankCheckFunc (Square s1) (Square s2) = abs $ snd s1 - snd s2
 squareCheckFunc sq1 sq2 = max (fileCheckFunc sq1 sq2) (rankCheckFunc sq1 sq2)
 
+checkLookup :: LookupTable -> (Square -> Square -> Int) -> BoardSize -> Property
 checkLookup lt cmp b = forAll (genTwoSquares b) $ \(sq1, sq2) ->
     let idx1 = squareToIndex b sq1
         idx2 = squareToIndex b sq2
     in fetch lt idx1 idx2 == cmp sq1 sq2
 
+prop_checkFileDistance1 :: Property
 prop_checkFileDistance1 = checkLookup fTable1 fileCheckFunc board1
+
+prop_checkFileDistance2 :: Property
 prop_checkFileDistance2 = checkLookup fTable2 fileCheckFunc board2
+
+prop_checkRankDistance1 :: Property
 prop_checkRankDistance1 = checkLookup rTable1 rankCheckFunc board1
+
+prop_checkRankDistance2 :: Property
 prop_checkRankDistance2 = checkLookup rTable2 rankCheckFunc board2
+
+prop_checkSquareDistance1 :: Property
 prop_checkSquareDistance1 = checkLookup sTable1 squareCheckFunc board1
+
+prop_checkSquareDistance2 :: Property
 prop_checkSquareDistance2 = checkLookup sTable2 squareCheckFunc board2
 

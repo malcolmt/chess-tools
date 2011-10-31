@@ -6,15 +6,17 @@
  - going to be more appropriate.
  -}
 
-import Test.Framework (defaultMain, testGroup)
+import Test.Framework (defaultMain, testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 import ChessTools.Test.Board
 import ChessTools.Test.WesternBoard
 
 
+main :: IO ()
 main = defaultMain tests
 
+tests :: [Test]
 tests = [
           testGroup "Board arrays" [
               testProperty "index to square" prop_indexToSquareInverse

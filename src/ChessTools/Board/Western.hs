@@ -15,8 +15,9 @@ import ChessTools.Board
 westernBoardSize :: BoardSize
 westernBoardSize = BoardSize 8 8 2
 
-coveringIndices :: CoveringIndexList
-coveringIndices = repIndexList westernBoardSize
+-- XXX: Not yet used; commented out to maintain warning-free build.
+-- coveringIndices :: CoveringIndexList
+-- coveringIndices = repIndexList westernBoardSize
 
 -- | Converts a square name, such as /"e5"/ to an index into a board array.
 -- Returns 'Nothing' if the provided string is invalid (too long or not a
