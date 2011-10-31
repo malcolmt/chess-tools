@@ -21,6 +21,8 @@ tests = [
           testGroup "Board arrays" [
               testProperty "index to square" prop_indexToSquareInverse
             , testProperty "square to index" prop_squareToIndexInverse
+            , testProperty "bad square to index" prop_errorSquareToIndex
+            , testProperty "bad index to square" prop_errorIndexToSquare
             , testProperty "indices increase" prop_indexIncreasesWithSquare
             , testProperty "array size" prop_boardArraySize
             ]
@@ -36,6 +38,8 @@ tests = [
         , testGroup "Western notation" [
               testProperty "good algebraic squares" prop_goodAlgebraicSquares
             , testProperty "bad algebraic squares" prop_badAlgebraicSquares
+            , testProperty "index to algebraic" prop_indexToAlgebraic
+            , testProperty "bad index to algebraic" prop_errorIndexToAlgebraic
             ]
         ]
 

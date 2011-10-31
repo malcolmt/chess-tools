@@ -24,7 +24,7 @@ data BoardSize = BoardSize {
                     boardVertBuffer :: Int   -- ^ Vertical buffer size for
                                              --   jumping pieces.
                     }
-                    deriving (Show, Eq)
+                    deriving (Show)
 
 -- | The coordinates of a cell on the board.
 --
@@ -80,20 +80,23 @@ newtype CoveringIndexList = CL [(LIndex, (Square, Square))]
 
 -- | Convert a 'Square' to an index into a board array. The index is the same
 -- for all board arrays associated with a given 'BoardSize'.
-squareToIndex :: BoardSize -> Square -> BIndex
+squareToIndex :: BoardSize -> Square -> Maybe BIndex
 squareToIndex s (Square (x, y))
-    | x < 0 || y < 0 || x >= h || y >= v = BI 0
-    | otherwise = BI $ (y + vBuf) * rowLength s + leftBuf s + x
+    | x < 0 || y < 0 || x >= h || y >= v = Nothing
+    | otherwise = Just . BI $ (y + vBuf) * rowLength s + leftBuf s + x
     where BoardSize h v vBuf = s
 
 -- | Convert a board array index to a 'Square'. This is the inverse of
 -- 'squareToIndex'.
-indexToSquare :: BoardSize -> BIndex -> Square
-indexToSquare s (BI idx) = Square (x, y)
+indexToSquare :: BoardSize -> BIndex -> Maybe Square
+indexToSquare s (BI idx)
+    | x < 0 || y < 0 || x >= h || y >= v = Nothing
+    | otherwise                          = Just $ Square (x, y)
     where rl = rowLength s
           idx' = idx - rl * boardVertBuffer s
           (y, x') = idx' `divMod` rl
           x = x' - leftBuf s
+          BoardSize h v _ = s
 
 -- | The length of a single (virtual) row in the board array. This is wider
 -- than the board row length due to the buffer space at each end of the row.

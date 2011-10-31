@@ -39,6 +39,7 @@ module ChessTools.Board (
 
 import Data.Array ((!))
 import Data.List (groupBy, sort)
+import Data.Maybe (fromJust)
 
 import ChessTools.Board.Internal
 
@@ -102,7 +103,7 @@ repIndexList s@(BoardSize h v _) = CL $ map head $ groupBy compFirst $ sort l
     where l = [(d1 `biMinus` d2, (s1, s2)) |
                     (d1, s1) <- squares, (d2, s2) <- squares]
           compFirst x y = fst x == fst y
-          squares = zip (map (squareToIndex s) sqs) sqs
+          squares = zip (map (fromJust . squareToIndex s) sqs) sqs
           sqs = [Square (x, y) | x <- [0 .. h - 1], y <- [0 .. v - 1]]
 
 

@@ -2,23 +2,15 @@ module ChessTools.Test.Board
 where
 
 import Control.Applicative ((<$>), (<*>))
+import Control.Monad (join, liftM)
 import Data.List (group, sort)
+import Data.Maybe (fromJust)
 import Test.QuickCheck
 
 import ChessTools.Board
 import ChessTools.Board.Internal
+import ChessTools.Test.Utils
 
-
--- This could be an Arbitrary instance, but it would be an orphan. We don't
--- want to put the instance in ChessTools.Board.Internal to avoid unnecessary
--- QuickCheck dependencies, so prefer to use a direct Gen function here.
-boardSizeGen :: Gen BoardSize
-boardSizeGen = sized $ \n -> do
-    let n' = n + 2
-    dx <- choose (2, n')
-    dy <- choose (2, n')
-    vbuf <- choose (0, 4)
-    return $ BoardSize dx dy vbuf
 
 -- | For some of the more complex tests (there's at least one function that is
 -- O(n^4), for example), it's more feasible to only generate small realistic
@@ -27,13 +19,17 @@ smallBoardGen :: Gen BoardSize
 smallBoardGen = sized $ \n ->
     resize (min n 11) boardSizeGen
 
--- | Square coordinates depend upon the dimensions of the board that contains
--- them. Hence, this generator requires a seeding parameter: the board size.
-genSquare :: BoardSize -> Gen Square
-genSquare bs = do
-    sx <- choose (0, boardHorizSize bs - 1)
-    sy <- choose (0, boardVertSize bs - 1)
-    return $ Square (sx, sy)
+genBadSquare :: BoardSize -> Gen Square
+genBadSquare (BoardSize h v _) = oneof [badX, badY]
+    where badX = do
+            sx <- oneof [choose (-5, -1), choose (h, h + 5)]
+            sy <- choose (-5, v + 5)
+            return $ Square (sx, sy)
+
+          badY = do
+            sx <- choose (-5, h + 5)
+            sy <- oneof [choose (-5, -1), choose (v, v + 5)]
+            return $ Square (sx, sy)
 
 genTwoSquares :: BoardSize -> Gen (Square, Square)
 genTwoSquares bs = (,) <$> genSquare bs <*> genSquare bs
@@ -51,6 +47,11 @@ boardAndTwoSquareGen = do
     s2 <- genSquare bs
     return (bs, s1, s2)
 
+boardAndBadSquareGen :: Gen (BoardSize, Square)
+boardAndBadSquareGen = do
+    bs <- boardSizeGen
+    sq <- genBadSquare bs
+    return (bs, sq)
 
 -- XXX: It's a little annoying that this is precisely how squareToIndex is
 -- implemented, so it's not really verifying the result of that conversion by
@@ -59,9 +60,14 @@ boardAndTwoSquareGen = do
 boardAndIndexGen :: Gen (BoardSize, BIndex)
 boardAndIndexGen = do
     bs <- boardSizeGen
-    Square (dx, dy) <- genSquare bs
-    return (bs, BI ((dy + boardVertBuffer bs) * rowLength bs + dx + leftBuf bs))
+    idx <- genIndex bs
+    return (bs, idx)
 
+boardAndBadIndexGen :: Gen (BoardSize, BIndex)
+boardAndBadIndexGen = do
+    bs <- boardSizeGen
+    idx <- genBadIndex bs
+    return (bs, idx)
 
 -- The squareToIndex and indexToSquare functions should be inverses of each
 -- other. That is:
@@ -69,11 +75,20 @@ boardAndIndexGen = do
 --      square -> index -> square should be the identity
 prop_indexToSquareInverse :: Property
 prop_indexToSquareInverse = forAll boardAndIndexGen $ \(b, idx) ->
-    squareToIndex b (indexToSquare b idx) == idx
+    join (squareToIndex b `liftM` indexToSquare b idx) == Just idx
 
 prop_squareToIndexInverse :: Property
 prop_squareToIndexInverse = forAll boardAndSquareGen $ \(b, sq) ->
-    indexToSquare b (squareToIndex b sq) == sq
+    join (indexToSquare b `liftM` squareToIndex b sq) == Just sq
+
+-- squareToIndex and indexToSquare should handle bad input appropriately.
+prop_errorSquareToIndex :: Property
+prop_errorSquareToIndex = forAll boardAndBadSquareGen $ \(b, sq) ->
+    squareToIndex b sq == Nothing
+
+prop_errorIndexToSquare :: Property
+prop_errorIndexToSquare = forAll boardAndBadIndexGen $ \(b, idx) ->
+    indexToSquare b idx == Nothing
 
 -- As squares move from lower left ("a1" in western chess) to upper right (h8),
 -- the index into the lookup table should increase.
@@ -123,15 +138,17 @@ rTable2 = rankTable repList2
 sTable1 = squareTable repList1
 sTable2 = squareTable repList2
 
-fileCheckFunc, rankCheckFunc, squareCheckFunc :: Square -> Square -> Int
+type SquareCmpFunc = Square -> Square -> Int
+
+fileCheckFunc, rankCheckFunc, squareCheckFunc :: SquareCmpFunc
 fileCheckFunc (Square s1) (Square s2) = abs $ fst s1 - fst s2
 rankCheckFunc (Square s1) (Square s2) = abs $ snd s1 - snd s2
 squareCheckFunc sq1 sq2 = max (fileCheckFunc sq1 sq2) (rankCheckFunc sq1 sq2)
 
-checkLookup :: LookupTable -> (Square -> Square -> Int) -> BoardSize -> Property
+checkLookup :: LookupTable -> SquareCmpFunc -> BoardSize -> Property
 checkLookup lt cmp b = forAll (genTwoSquares b) $ \(sq1, sq2) ->
-    let idx1 = squareToIndex b sq1
-        idx2 = squareToIndex b sq2
+    let idx1 = fromJust $ squareToIndex b sq1
+        idx2 = fromJust $ squareToIndex b sq2
     in fetch lt idx1 idx2 == cmp sq1 sq2
 
 prop_checkFileDistance1 :: Property

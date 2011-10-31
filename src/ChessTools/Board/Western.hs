@@ -4,6 +4,7 @@
 module ChessTools.Board.Western (
       algebraicToIndex
     , indexToAlgebraic
+    , westernBoardSize
 ) where
 
 
@@ -22,25 +23,21 @@ westernBoardSize = BoardSize 8 8 2
 -- | Converts a square name, such as /"e5"/ to an index into a board array.
 -- Returns 'Nothing' if the provided string is invalid (too long or not a
 -- reference to a legal square).
-algebraicToIndex :: [Char] -> Maybe BIndex
-algebraicToIndex cs
-    | length cs /= 2 = Nothing
-    | file < 0 || file > 7 = Nothing
-    | rank < 0 || rank > 7 = Nothing
-    | otherwise = Just . squareToIndex westernBoardSize $ Square (file, rank)
-    where f:r:[] = cs
-          file = ord f - ord 'a'
+algebraicToIndex :: String -> Maybe BIndex
+algebraicToIndex (f:r:[]) = squareToIndex westernBoardSize $ Square (file, rank)
+    where file = ord f - ord 'a'
           rank = ord r - ord '1'
+
+algebraicToIndex _ = Nothing
+
 
 -- | Converts an index into a board array back into an algebraic notation
 -- square designation, such as "/e5/".
-
--- FIXME: How to handle errors? How to even detect errors? (I don't want
--- indexToSquare having to go through Maybe all the time, since it will be
--- called all over the place.)
-indexToAlgebraic :: BIndex -> Maybe [Char]
-indexToAlgebraic x = Just $ chr (f + ord 'a') : chr (r + ord '1') : []
-    where Square (f, r) = indexToSquare westernBoardSize x
+indexToAlgebraic :: BIndex -> Maybe String
+indexToAlgebraic x = case sq of
+    Just (Square (f, r)) -> Just $ chr (f + ord 'a') : [chr (r + ord '1')]
+    _                    -> Nothing
+    where sq = indexToSquare westernBoardSize x
 
 -- | Determine if a move /from/ an index /to/ another index is legal on the
 -- given 'Board'.
