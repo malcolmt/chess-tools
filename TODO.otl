@@ -11,7 +11,10 @@
 		[_] Shogi
 		[_] Xiangqi
 			: May be tricky because of the "knight" move and blocking.
-	[X] tests
+	[_] Move generation (western only)
+		[_] legality checking
+		[_] threat from other pieces determination
+	[X] test setup
 [_] Games
 	[_] data structure for holding games and nested comments
 	[_] move legality checking
@@ -23,9 +26,14 @@
 	[_] take game object and convert to PGN
 	[_] arbitrary starting position (FEN parsing)
 	[_] Chess 960 games
-[X] Packaging
+[_] Packaging and polish
 	[X] Setup,hs
 	[X] chess-tools.cabal
+	[_] Get test suite working as part of "cabal test"
+	[_] User documentation
+	[_] Check HPC results for test coverage
+[_] Performance
+	[_] Use arays of unboxed ints internally, once the interface is right.
 [_] Maybe one day...
 	[_] UCI interface for western chess
 	[_] USI interface for shogi
