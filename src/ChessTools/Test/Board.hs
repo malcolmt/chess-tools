@@ -1,4 +1,4 @@
-module TestBoard
+module ChessTools.Test.Board
 where
 
 import Control.Applicative ((<$>), (<*>))

@@ -9,7 +9,7 @@
 import Test.Framework (defaultMain, testGroup)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-import TestBoard
+import ChessTools.Test.Board
 
 
 main = defaultMain tests
