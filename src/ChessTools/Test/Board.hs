@@ -66,22 +66,22 @@ boardAndIndexGen = do
 -- other. That is:
 --      index -> square -> index should be the identity
 --      square -> index -> square should be the identity
-prop_index_to_square_inverse = forAll boardAndIndexGen $ \(b, idx) ->
+prop_indexToSquareInverse = forAll boardAndIndexGen $ \(b, idx) ->
     squareToIndex b (indexToSquare b idx) == idx
 
-prop_square_to_index_inverse = forAll boardAndSquareGen $ \(b, sq) ->
+prop_squareToIndexInverse = forAll boardAndSquareGen $ \(b, sq) ->
     indexToSquare b (squareToIndex b sq) == sq
 
 -- As squares move from lower left ("a1" in western chess) to upper right (h8),
 -- the index into the lookup table should increase.
-prop_index_increases_with_square = forAll boardAndTwoSquareGen $ \(b, s1, s2) ->
+prop_indexIncreasesWithSquare = forAll boardAndTwoSquareGen $ \(b, s1, s2) ->
     let idx1 = squareToIndex b s1
         idx2 = squareToIndex b s2
     in s1 `compare` s2 == idx1 `compare` idx2
 
 -- The board array size should be computed correctly (this is the
 -- representation of the board of pieces, not a lookup array, which is smaller).
-prop_board_array_size bs = boardArraySize bs == expected
+prop_boardArraySize bs = boardArraySize bs == expected
     where BoardSize h v vbuf = bs
           expected = h * v + v * (h - 1) + 2 * vbuf * (2 * h - 1)
 
@@ -89,7 +89,7 @@ prop_board_array_size bs = boardArraySize bs == expected
 -- The list returned from repIndexList should actually be representative. That
 -- is, it should contain as many values as the size of the lookup array and all
 -- of the distance values in it should be unique.
-prop_repIndexList_is_representative = forAll smallBoardGen $ \bs ->
+prop_repIndexListRepresents = forAll smallBoardGen $ \bs ->
     let cl@(CL xs) = repIndexList bs
         (l, u) = lookupBounds cl
     in length xs == u - l + 1 &&
@@ -121,10 +121,10 @@ checkLookup lt cmp b = forAll (genTwoSquares b) $ \(sq1, sq2) ->
         idx2 = squareToIndex b sq2
     in fetch lt idx1 idx2 == cmp sq1 sq2
 
-prop_check_file_distance_1 = checkLookup fTable1 fileCheckFunc board1
-prop_check_file_distance_2 = checkLookup fTable2 fileCheckFunc board2
-prop_check_rank_distance_1 = checkLookup rTable1 rankCheckFunc board1
-prop_check_rank_distance_2 = checkLookup rTable2 rankCheckFunc board2
-prop_check_square_distance_1 = checkLookup sTable1 squareCheckFunc board1
-prop_check_square_distance_2 = checkLookup sTable2 squareCheckFunc board2
+prop_checkFileDistance1 = checkLookup fTable1 fileCheckFunc board1
+prop_checkFileDistance2 = checkLookup fTable2 fileCheckFunc board2
+prop_checkRankDistance1 = checkLookup rTable1 rankCheckFunc board1
+prop_checkRankDistance2 = checkLookup rTable2 rankCheckFunc board2
+prop_checkSquareDistance1 = checkLookup sTable1 squareCheckFunc board1
+prop_checkSquareDistance2 = checkLookup sTable2 squareCheckFunc board2
 

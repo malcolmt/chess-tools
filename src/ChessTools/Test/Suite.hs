@@ -17,20 +17,19 @@ main = defaultMain tests
 
 tests = [
           testGroup "Board arrays" [
-              testProperty "index to square" prop_index_to_square_inverse
-            , testProperty "square to index" prop_square_to_index_inverse
-            , testProperty "indices increase" prop_index_increases_with_square
-            , testProperty "array size" prop_board_array_size
+              testProperty "index to square" prop_indexToSquareInverse
+            , testProperty "square to index" prop_squareToIndexInverse
+            , testProperty "indices increase" prop_indexIncreasesWithSquare
+            , testProperty "array size" prop_boardArraySize
             ]
         , testGroup "Lookup arrays" [
-              testProperty "repIndexList represents"
-                    prop_repIndexList_is_representative
-            , testProperty "file lookup 1" prop_check_file_distance_1
-            , testProperty "file lookup 2" prop_check_file_distance_2
-            , testProperty "rank lookup 1" prop_check_rank_distance_1
-            , testProperty "rank lookup 2" prop_check_rank_distance_2
-            , testProperty "square lookup 1" prop_check_square_distance_1
-            , testProperty "square lookup 2" prop_check_square_distance_2
+              testProperty "repIndexList represents" prop_repIndexListRepresents
+            , testProperty "file lookup 1" prop_checkFileDistance1
+            , testProperty "file lookup 2" prop_checkFileDistance2
+            , testProperty "rank lookup 1" prop_checkRankDistance1
+            , testProperty "rank lookup 2" prop_checkRankDistance2
+            , testProperty "square lookup 1" prop_checkSquareDistance1
+            , testProperty "square lookup 2" prop_checkSquareDistance2
             ]
         , testGroup "Western notation" [
               testProperty "good algebraic squares" prop_goodAlgebraicSquares
