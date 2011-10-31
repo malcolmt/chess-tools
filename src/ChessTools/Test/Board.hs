@@ -55,11 +55,11 @@ boardAndTwoSquareGen = do
 -- implemented, so it's not really verifying the result of that conversion by
 -- different means.
 
-boardAndIndexGen :: Gen (BoardSize, Int)
+boardAndIndexGen :: Gen (BoardSize, BIndex)
 boardAndIndexGen = do
     bs <- arbitrary :: Gen BoardSize
     Square (dx, dy) <- genSquare bs
-    return (bs, (dy + boardVertBuffer bs) * rowLength bs + dx + leftBuf bs)
+    return (bs, BI ((dy + boardVertBuffer bs) * rowLength bs + dx + leftBuf bs))
 
 
 -- The squareToIndex and indexToSquare functions should be inverses of each
@@ -92,7 +92,7 @@ prop_boardArraySize bs = boardArraySize bs == expected
 prop_repIndexListRepresents = forAll smallBoardGen $ \bs ->
     let cl@(CL xs) = repIndexList bs
         (l, u) = lookupBounds cl
-    in length xs == u - l + 1 &&
+    in length xs == fromLI u - fromLI l + 1 &&
        (length . group . sort $ map fst xs) == length xs
 
 

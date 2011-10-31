@@ -49,11 +49,25 @@ instance Ord Square where
             GT -> GT
             EQ -> x1 `compare` x2
 
+
+-- | A representation of a board position.
+newtype Board = Board (Array BIndex Int) deriving (Show, Eq)
+
+-- | An index into a 'Board' array.
+newtype BIndex = BI {fromBI :: Int} deriving (Show, Eq, Ord, Ix)
+
+-- | Subtract two board indexes to get an offset into a lookup table.
+biMinus :: BIndex -> BIndex -> LIndex
+biMinus x y = LI $ fromBI x - fromBI y
+
+-- | An index into a 'LookupTable' array.
+newtype LIndex = LI {fromLI :: Int} deriving (Show, Eq, Ord, Ix)
+
 -- | A rapid lookup (/O(1)/) data structure for computing various values based
 -- on two squares on the board. These could be distances between the squares in
 -- some form (file or rank separation) or whether some kind of piece can move
 -- between those two squares (using 0 values for invalid moves).
-data LookupTable = LookupTable (Array Int Int)
+data LookupTable = LookupTable (Array LIndex Int)
 
 -- | Used to hold a representative set of squares when computing 'LookupTable'
 -- results. Create one with 'repIndexList' and use it in all lookup table
@@ -62,20 +76,20 @@ data LookupTable = LookupTable (Array Int Int)
 -- For internal code using this, the main invariant to note is that the offset
 -- component (the first 'Int') is in sorted order. This is used by, for
 -- example, the 'lookupBounds' function.
-newtype CoveringIndexList = CL [(Int, (Square, Square))]
+newtype CoveringIndexList = CL [(LIndex, (Square, Square))]
 
 -- | Convert a 'Square' to an index into a board array. The index is the same
 -- for all board arrays associated with a given 'BoardSize'.
-squareToIndex :: BoardSize -> Square -> Int
+squareToIndex :: BoardSize -> Square -> BIndex
 squareToIndex s (Square (x, y))
-    | x < 0 || y < 0 || x >= h || y >= v = 0
-    | otherwise = (y + vBuf) * rowLength s + leftBuf s + x
+    | x < 0 || y < 0 || x >= h || y >= v = BI 0
+    | otherwise = BI $ (y + vBuf) * rowLength s + leftBuf s + x
     where BoardSize h v vBuf = s
 
 -- | Convert a board array index to a 'Square'. This is the inverse of
 -- 'squareToIndex'.
-indexToSquare :: BoardSize -> Int -> Square
-indexToSquare s idx = Square (x, y)
+indexToSquare :: BoardSize -> BIndex -> Square
+indexToSquare s (BI idx) = Square (x, y)
     where rl = rowLength s
           idx' = idx - rl * boardVertBuffer s
           (y, x') = idx' `divMod` rl
@@ -93,7 +107,7 @@ leftBuf s = boardHorizSize s `div` 2
 
 -- | Returns a pair that can be used to specify the bounds for a
 -- 'Data.Array.Array'.
-lookupBounds :: CoveringIndexList -> (Int, Int)
+lookupBounds :: CoveringIndexList -> (LIndex, LIndex)
 lookupBounds (CL cs) = (fst $ head cs, fst $ last cs)
 
 -- | Utility function for computing the file, rank and square distance tables.

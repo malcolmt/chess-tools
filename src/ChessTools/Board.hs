@@ -14,12 +14,16 @@ module ChessTools.Board (
     , Square(..)
     , squareToIndex
     , indexToSquare
+    , Board
+    , BIndex
+    , biMinus
 
     -- * Creating lookup tables
     -- $lookup_creation
     , LookupTable
     , CoveringIndexList(..)
     , repIndexList
+    , LIndex
 
     -- * Existing lookup creation functions
     -- $tables
@@ -77,10 +81,11 @@ boardArraySize s@(BoardSize _ v vBuf) =  rowLength s * (v + 2 * vBuf)
 -- constant for a given 'BoardSize' and the board size doesn't change for a
 -- particular sort of game, they can be computed once and reused.
 
--- | Return the 'LookupTable' value for a pair of indexes. The first index is
--- the \"/from/\" location, the second is the \"/to/\" location.
-fetch :: LookupTable -> Int -> Int -> Int
-fetch (LookupTable arr) s1 s2 = arr ! (s1 - s2)
+-- | Return the 'LookupTable' value for a pair of indexes into a 'Board' array.
+-- The first index is the \"/from/\" location, the second is the \"/to/\"
+-- location.
+fetch :: LookupTable -> BIndex -> BIndex -> Int
+fetch (LookupTable arr) s1 s2 = arr ! (s1 `biMinus` s2)
 
 -- | Returns a list of representative 'Square' pairs that cover all the lookup
 -- table index values. On a square board, there are @(2x-1)^2@ possible index
@@ -94,7 +99,8 @@ fetch (LookupTable arr) s1 s2 = arr ! (s1 - s2)
 -- the cost is a negligible contribution to the total runtime in practice.
 repIndexList :: BoardSize -> CoveringIndexList
 repIndexList s@(BoardSize h v _) = CL $ map head $ groupBy compFirst $ sort l
-    where l = [(d1 - d2, (s1, s2)) | (d1, s1) <- squares, (d2, s2) <- squares]
+    where l = [(d1 `biMinus` d2, (s1, s2)) |
+                    (d1, s1) <- squares, (d2, s2) <- squares]
           compFirst x y = fst x == fst y
           squares = zip (map (squareToIndex s) sqs) sqs
           sqs = [Square (x, y) | x <- [0 .. h - 1], y <- [0 .. v - 1]]
