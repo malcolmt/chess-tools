@@ -13,10 +13,12 @@ import Data.Char (ord, chr)
 import ChessTools.Board
 
 
+-- | The 'BoardSize' for a western-style chessboard.
 westernBoardSize :: BoardSize
 westernBoardSize = BoardSize 8 8 2
 
 -- XXX: Not yet used; commented out to maintain warning-free build.
+-- | A 'CoveringIndexList' appropriate for a western-style chessboard size.
 -- coveringIndices :: CoveringIndexList
 -- coveringIndices = repIndexList westernBoardSize
 
@@ -32,7 +34,7 @@ algebraicToIndex _ = Nothing
 
 
 -- | Converts an index into a board array back into an algebraic notation
--- square designation, such as "/e5/".
+-- square designation, such as /"e5"/.
 indexToAlgebraic :: BIndex -> Maybe String
 indexToAlgebraic x = case sq of
     Just (Square (f, r)) -> Just $ chr (f + ord 'a') : [chr (r + ord '1')]

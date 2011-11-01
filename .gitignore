@@ -4,5 +4,6 @@ html/
 *.hi
 *.o
 *.tix
-Suite
+CabalTest
+ConsoleTest
 

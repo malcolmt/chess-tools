@@ -1,20 +1,19 @@
 {-
- - Runs all the tests and provides a nice summary output, using the
- - test-framework library.
+ - Grouping of tests into groups and giving them readable names.
  -
- - Useful during development. During deployment situations, "cabal test" is
- - going to be more appropriate.
+ - Runner files for these tests are in ConsoleTest.hs and CabalTest.hs.
  -}
 
-import Test.Framework (defaultMain, testGroup, Test)
+module ChessTools.Test.Suite (
+    tests
+) where
+
+import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 import ChessTools.Test.Board
 import ChessTools.Test.WesternBoard
 
-
-main :: IO ()
-main = defaultMain tests
 
 tests :: [Test]
 tests = [
